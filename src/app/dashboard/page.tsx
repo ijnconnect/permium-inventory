@@ -152,7 +152,7 @@ export default function DashboardPage() {
             {/* These exist in your project already (you had export routes earlier). */}
             <a style={btn} href="/api/export/inventory">Export Inventory CSV</a>
             <a style={btn} href="/api/export/transactions">Export Transactions CSV</a>
-            <a style={btn} href="/scan?loc=store&sig=TEMP&lang=bm">Go to Scan</a>
+<a className="btn btn-primary" href="/scan/manual">Go to Stock Entry</a>
           </div>
         </div>
 
