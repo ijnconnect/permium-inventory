@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { t, Lang } from "@/lib/i18n";
+export const dynamic = "force-dynamic";
 
 type TxType = "OUT" | "IN" | "TRANSFER";
 type ToastKind = "success" | "error" | "info";
