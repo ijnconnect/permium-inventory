@@ -1,3 +1,6 @@
+// src/app/admin/inventory/page.tsx
+import { getBaseUrl } from "@/lib/baseUrl";
+
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
@@ -15,9 +18,11 @@ export default async function InventoryAdminPage() {
   let err: string | null = null;
 
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL ?? ""}/api/admin/inventory`, {
+    const base = await getBaseUrl(); // ✅ IMPORTANT: await
+    const res = await fetch(`${base}/api/admin/inventory`, {
       cache: "no-store",
     });
+
     const json = await res.json();
     if (!res.ok) err = json?.error ?? "Failed to load inventory";
     rows = json?.rows ?? json ?? [];
@@ -33,10 +38,13 @@ export default async function InventoryAdminPage() {
             <h1 className="h1">Inventory (Stok Semasa)</h1>
             <p className="sub">Paparan snapshot terkini mengikut lokasi</p>
           </div>
+
           <div className="row">
             <a className="btn btn-soft" href="/dashboard">
               Dashboard
             </a>
+
+            {/* ✅ This should go to manual scan page (no QR required) */}
             <a className="btn btn-primary" href="/scan">
               Go to Scan
             </a>
@@ -57,6 +65,7 @@ export default async function InventoryAdminPage() {
                 <th style={{ textAlign: "right" }}>Total</th>
               </tr>
             </thead>
+
             <tbody>
               {rows.length === 0 ? (
                 <tr>
