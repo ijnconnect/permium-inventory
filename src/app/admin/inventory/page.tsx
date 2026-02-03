@@ -18,36 +18,45 @@ export default async function InventoryAdminPage() {
   let err: string | null = null;
 
   try {
-    const base = await getBaseUrl(); // ✅ IMPORTANT: await
-    const res = await fetch(`${base}/api/admin/inventory`, {
-      cache: "no-store",
-    });
+    const base = await getBaseUrl();
+    const url = `${base}/api/admin/inventory`;
 
-    const json = await res.json();
-    if (!res.ok) err = json?.error ?? "Failed to load inventory";
-    rows = json?.rows ?? json ?? [];
+    const res = await fetch(url, { cache: "no-store" });
+    const text = await res.text();
+
+    let json: any = null;
+    try {
+      json = JSON.parse(text);
+    } catch {
+      // ✅ If it's HTML, show helpful message instead of "Unexpected token <"
+      err = `API did not return JSON (HTTP ${res.status}). This usually means 404 or a redirect. Open this URL in browser to check: ${url}`;
+      return renderPage(rows, err);
+    }
+
+    if (!res.ok) {
+      err = json?.error ?? `Failed to load inventory (HTTP ${res.status})`;
+    } else {
+      rows = json?.rows ?? json ?? [];
+    }
   } catch (e: any) {
     err = e?.message ?? String(e);
   }
 
+  return renderPage(rows, err);
+}
+
+function renderPage(rows: Row[], err: string | null) {
   return (
     <main className="container">
       <div className="card card-pad stack">
         <div className="row-between">
           <div>
-            <h1 className="h1">Inventory (Stok Semasa)</h1>
-            <p className="sub">Paparan snapshot terkini mengikut lokasi</p>
+            <h1 className="h1">Inventory (Current Stock)</h1>
+            <p className="sub">Latest snapshot by location</p>
           </div>
-
           <div className="row">
-            <a className="btn btn-soft" href="/dashboard">
-              Dashboard
-            </a>
-
-            {/* ✅ This should go to manual scan page (no QR required) */}
-            <a className="btn btn-primary" href="/scan">
-              Go to Scan
-            </a>
+            <a className="btn btn-soft" href="/dashboard">Dashboard</a>
+            <a className="btn btn-primary" href="/scan">Go to Scan</a>
           </div>
         </div>
 
@@ -59,19 +68,16 @@ export default async function InventoryAdminPage() {
               <tr>
                 <th>SKU</th>
                 <th>Item</th>
-                <th style={{ textAlign: "right" }}>Office / Pejabat</th>
-                <th style={{ textAlign: "right" }}>Store / Kedai</th>
-                <th style={{ textAlign: "right" }}>Vending / Mesin</th>
+                <th style={{ textAlign: "right" }}>Office</th>
+                <th style={{ textAlign: "right" }}>Store</th>
+                <th style={{ textAlign: "right" }}>Vending</th>
                 <th style={{ textAlign: "right" }}>Total</th>
               </tr>
             </thead>
-
             <tbody>
               {rows.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="helper">
-                    No items found.
-                  </td>
+                  <td colSpan={6} className="helper">No items found.</td>
                 </tr>
               ) : (
                 rows.map((r) => (
@@ -91,9 +97,7 @@ export default async function InventoryAdminPage() {
           </table>
         </div>
 
-        <div className="helper">
-          Tip: Kalau nak export CSV, guna endpoint export yang awak dah buat (kalau ada).
-        </div>
+        <div className="helper">Tip: Use your export endpoint for CSV (if available).</div>
       </div>
     </main>
   );
