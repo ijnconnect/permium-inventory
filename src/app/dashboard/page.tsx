@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
+export const dynamic = "force-dynamic";
 
 type SummaryRow = {
   sku: string;
