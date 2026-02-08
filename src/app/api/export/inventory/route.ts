@@ -1,33 +1,38 @@
-import { NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
+
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   const sb = supabaseServer();
+  const { data, error } = await sb
+    .from("inventory_snapshot")
+    .select("sku,name,store,office")
+    .order("sku", { ascending: true });
 
-  const { data: rows, error } = await sb
-    .from("stock_levels")
-    .select("qty, updated_at, items(sku,name), locations(code,name)");
+  if (error) return new Response(error.message, { status: 500 });
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-
-  const header = ["sku","item_name","location_code","location_name","qty","updated_at"];
+  const header = ["SKU", "Item", "Store (Panas)", "Office (CCD)", "Total"];
   const lines = [header.join(",")];
 
-  for (const r of rows ?? []) {
-    const sku = (r as any).items?.sku ?? "";
-    const itemName = (r as any).items?.name ?? "";
-    const locCode = (r as any).locations?.code ?? "";
-    const locName = (r as any).locations?.name ?? "";
-    const qty = (r as any).qty ?? 0;
-    const updatedAt = (r as any).updated_at ?? "";
-    const esc = (s: any) => `"${String(s ?? "").replaceAll(`"`, `""`)}"`;
-    lines.push([esc(sku), esc(itemName), esc(locCode), esc(locName), qty, esc(updatedAt)].join(","));
+  for (const r of data ?? []) {
+    const store = Number((r as any).store ?? 0);
+    const office = Number((r as any).office ?? 0);
+    const total = store + office;
+    const row = [
+      (r as any).sku,
+      `"${String((r as any).name ?? "").replaceAll(`"`, `""`)}"`,
+      String(store),
+      String(office),
+      String(total),
+    ];
+    lines.push(row.join(","));
   }
 
-  return new NextResponse(lines.join("\n"), {
+  const csv = lines.join("\n");
+  return new Response(csv, {
     headers: {
       "Content-Type": "text/csv; charset=utf-8",
-      "Content-Disposition": `attachment; filename="inventory_snapshot.csv"`,
+      "Content-Disposition": 'attachment; filename="inventory.csv"',
     },
   });
 }

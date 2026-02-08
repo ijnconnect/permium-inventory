@@ -1,49 +1,39 @@
-import { NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
 
-export async function GET(req: Request) {
-  const url = new URL(req.url);
-  const from = url.searchParams.get("from");
-  const to = url.searchParams.get("to");
+export const dynamic = "force-dynamic";
 
+export async function GET() {
   const sb = supabaseServer();
-
-  let q = sb
+  const { data, error } = await sb
     .from("transactions")
-    .select("created_at,type,qty,note, items(sku,name), from:locations!transactions_from_location_id_fkey(code,name), to:locations!transactions_to_location_id_fkey(code,name)")
-    .order("created_at", { ascending: true });
+    .select("id,ts,staff,item_sku,type,qty,loc,note")
+    .order("ts", { ascending: false })
+    .limit(5000);
 
-  if (from) q = q.gte("created_at", `${from}T00:00:00Z`);
-  if (to) q = q.lte("created_at", `${to}T23:59:59Z`);
+  if (error) return new Response(error.message, { status: 500 });
 
-  const { data: rows, error } = await q;
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-
-  const header = ["created_at","type","sku","item_name","from_location","to_location","qty","note"];
+  const header = ["Time", "Staff", "SKU", "Type", "Qty", "Location", "Note"];
   const lines = [header.join(",")];
-  const esc = (s: any) => `"${String(s ?? "").replaceAll(`"`, `""`)}"`;
 
-  for (const r of rows ?? []) {
-    const sku = (r as any).items?.sku ?? "";
-    const itemName = (r as any).items?.name ?? "";
-    const fromLoc = (r as any).from?.code ?? "";
-    const toLoc = (r as any).to?.code ?? "";
-    lines.push([
-      esc((r as any).created_at),
-      esc((r as any).type),
-      esc(sku),
-      esc(itemName),
-      esc(fromLoc),
-      esc(toLoc),
-      (r as any).qty ?? 0,
-      esc((r as any).note ?? ""),
-    ].join(","));
+  for (const t of data ?? []) {
+    const locLabel = (t as any).loc === "store" ? "Store (Panas)" : "Office (CCD)";
+    const row = [
+      `"${new Date((t as any).ts).toISOString()}"`,
+      `"${String((t as any).staff ?? "").replaceAll(`"`, `""`)}"`,
+      (t as any).item_sku,
+      (t as any).type,
+      String((t as any).qty),
+      `"${locLabel}"`,
+      `"${String((t as any).note ?? "").replaceAll(`"`, `""`)}"`,
+    ];
+    lines.push(row.join(","));
   }
 
-  return new NextResponse(lines.join("\n"), {
+  const csv = lines.join("\n");
+  return new Response(csv, {
     headers: {
       "Content-Type": "text/csv; charset=utf-8",
-      "Content-Disposition": `attachment; filename="transactions.csv"`,
+      "Content-Disposition": 'attachment; filename="transactions.csv"',
     },
   });
 }
