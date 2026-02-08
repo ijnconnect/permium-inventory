@@ -140,13 +140,15 @@ export default function ScanManualClient() {
 
           <div className="field" style={{ gridColumn: "1 / -1" }}>
             <label className="label">Item</label>
-            <select className="select" value={itemSku} onChange={(e) => setItemSku(e.target.value)}>
-              {items.map((it) => (
-                <option key={it.sku} value={it.sku}>
-                  {it.name} ({it.sku})
-                </option>
-              ))}
-            </select>
+         <select className="input" value={itemSku} onChange={(e) => setItemSku(e.target.value)}>
+  <option value="">Select an item…</option>
+  {items.map((it) => (
+    <option key={it.sku} value={it.sku}>
+      {it.name} ({it.sku})
+    </option>
+  ))}
+</select>
+
             {selectedItem && <div className="small">Selected: {selectedItem.name}</div>}
           </div>
 
