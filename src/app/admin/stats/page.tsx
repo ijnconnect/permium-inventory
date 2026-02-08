@@ -22,35 +22,33 @@ export default function StatsPage() {
     outByStaff.set(t.staff, (outByStaff.get(t.staff) || 0) + t.qty);
   }
 
-  const topOutItems = [...outBySku.entries()]
+  const topItems = [...outBySku.entries()]
     .sort((a, b) => b[1] - a[1])
     .slice(0, 10)
     .map(([sku, total]) => ({ sku, name: nameBySku.get(sku) || sku, total }));
 
   const locLabel = (k: string) => (k === "store" ? "Store (Panas)" : "Office (CCD)");
-
   const staffRows = [...outByStaff.entries()].sort((a, b) => b[1] - a[1]);
 
   return (
-    <div>
+    <div className="card">
       <div className="row" style={{ marginBottom: 12 }}>
         <div>
-          <h1 className="h1">Stats (Last 30 Days)</h1>
+          <div className="badge">Stats</div>
+          <h1 className="h1" style={{ marginTop: 10 }}>Stats (Last 30 Days)</h1>
           <p className="p">Summary of OUT transactions for the last 30 days.</p>
         </div>
-
         <div className="btnRow">
           <Link className="btn" href="/dashboard">Dashboard</Link>
           <Link className="btn btnPrimary" href="/scan/manual">Stock Entry</Link>
         </div>
       </div>
 
-      <div className="card" style={{ marginBottom: 14 }}>
+      <div className="card" style={{ marginBottom: 12 }}>
         <div className="row" style={{ marginBottom: 8 }}>
           <strong>Top OUT Items</strong>
-          <div className="badge">{topOutItems.length} item(s)</div>
+          <div className="badge">{topItems.length} item(s)</div>
         </div>
-
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr>
@@ -60,30 +58,25 @@ export default function StatsPage() {
             </tr>
           </thead>
           <tbody>
-            {topOutItems.map((r) => (
+            {topItems.map((r) => (
               <tr key={r.sku}>
                 <td>{r.sku}</td>
                 <td>{r.name}</td>
                 <td align="right"><strong>{r.total}</strong></td>
               </tr>
             ))}
-            {topOutItems.length === 0 && (
-              <tr>
-                <td colSpan={3} style={{ color: "#6b7280" }}>
-                  No OUT transactions in the last 30 days.
-                </td>
-              </tr>
+            {topItems.length === 0 && (
+              <tr><td colSpan={3} style={{ color: "#6b7280" }}>No OUT transactions in the last 30 days.</td></tr>
             )}
           </tbody>
         </table>
       </div>
 
-      <div className="card" style={{ marginBottom: 14 }}>
+      <div className="card" style={{ marginBottom: 12 }}>
         <div className="row" style={{ marginBottom: 8 }}>
           <strong>OUT by Location</strong>
           <div className="badge">{outByLoc.size} location(s)</div>
         </div>
-
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr>
@@ -99,11 +92,7 @@ export default function StatsPage() {
               </tr>
             ))}
             {outByLoc.size === 0 && (
-              <tr>
-                <td colSpan={2} style={{ color: "#6b7280" }}>
-                  No OUT transactions in the last 30 days.
-                </td>
-              </tr>
+              <tr><td colSpan={2} style={{ color: "#6b7280" }}>No OUT transactions in the last 30 days.</td></tr>
             )}
           </tbody>
         </table>
@@ -114,7 +103,6 @@ export default function StatsPage() {
           <strong>OUT by Staff</strong>
           <div className="badge">{staffRows.length} staff</div>
         </div>
-
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr>
@@ -130,11 +118,7 @@ export default function StatsPage() {
               </tr>
             ))}
             {staffRows.length === 0 && (
-              <tr>
-                <td colSpan={2} style={{ color: "#6b7280" }}>
-                  No OUT transactions in the last 30 days.
-                </td>
-              </tr>
+              <tr><td colSpan={2} style={{ color: "#6b7280" }}>No OUT transactions in the last 30 days.</td></tr>
             )}
           </tbody>
         </table>
