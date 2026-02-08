@@ -3,11 +3,12 @@ import ScanManualClient from "./ScanManualClient";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export default function ManualStockEntryPage() {
+export default function ManualPage() {
   return (
-    <div className="card">
-      <ScanManualClient />
+    <div style={{ display: "flex", justifyContent: "center" }}>
+      <div style={{ width: "100%", maxWidth: 980 }}>
+        <ScanManualClient />
+      </div>
     </div>
   );
 }
-{/* build stamp: 2026-02-09 */}

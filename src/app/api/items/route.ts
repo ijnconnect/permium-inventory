@@ -5,13 +5,17 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export async function GET() {
-  const sb = supabaseServer();
-  const { data, error } = await sb
-    .from("items")
-    .select("sku,name")
-    .eq("is_active", true)
-    .order("sku", { ascending: true });
+  try {
+    const sb = supabaseServer();
+    const { data, error } = await sb
+      .from("items")
+      .select("sku,name")
+      .eq("is_active", true)
+      .order("name", { ascending: true });
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ items: data ?? [] });
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ items: data ?? [] });
+  } catch (e: any) {
+    return NextResponse.json({ error: e?.message || "Failed to load items." }, { status: 500 });
+  }
 }
